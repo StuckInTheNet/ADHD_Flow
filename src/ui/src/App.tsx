@@ -1,15 +1,4 @@
-import { useState } from 'react';
-import { run } from '../../../src/core/engine'; // Adjust path as needed
-import { renderMarkdown, renderJson, renderYaml, renderGraphviz } from '../../../src/core/render'; // Adjust path as needed
-import './App.css';
-
-function App() {
-  const [problem, setProblem] = useState('');
-  const [output, setOutput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [outputFormat, setOutputFormat] = useState<'markdown' | 'json' | 'yaml' | 'dot'>('markdown');
-
-  const handleRunAdhdFlow = async () => {
+import { useState } => {
     setLoading(true);
     setOutput('Generating ideas...');
     try {
@@ -20,6 +9,8 @@ function App() {
         setOutput(renderYaml(result));
       } else if (outputFormat === 'dot') {
         setOutput(renderGraphviz(result));
+      } else if (outputFormat === 'html') {
+        setOutput(renderHtml(result));
       } else {
         setOutput(renderMarkdown(result));
       }
@@ -45,13 +36,14 @@ function App() {
         <div className="controls">
           <select
             value={outputFormat}
-            onChange={(e) => setOutputFormat(e.target.value as 'markdown' | 'json' | 'yaml' | 'dot')}
+            onChange={(e) => setOutputFormat(e.target.value as 'markdown' | 'json' | 'yaml' | 'dot' | 'html')}
             disabled={loading}
           >
             <option value="markdown">Markdown</option>
             <option value="json">JSON</option>
             <option value="yaml">YAML</option>
             <option value="dot">DOT (Graphviz)</option>
+            <option value="html">HTML</option>
           </select>
           <button onClick={handleRunAdhdFlow} disabled={loading}>
             {loading ? 'Generating...' : 'Run ADHD_Flow'}
@@ -60,7 +52,11 @@ function App() {
       </div>
       <div className="output-section">
         <h2>Results:</h2>
-        <pre>{output}</pre>
+        {outputFormat === 'html' ? (
+          <div dangerouslySetInnerHTML={{ __html: output }} />
+        ) : (
+          <pre>{output}</pre>
+        )}
       </div>
     </div>
   );

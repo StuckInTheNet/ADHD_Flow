@@ -10,6 +10,7 @@
 import { readFileSync } from "node:fs";
 import { run } from "./core/engine.js"; // Updated path
 import { renderMarkdown, renderJson, renderYaml, renderGraphviz } from "./core/render.js"; // Updated path and function
+import { renderHtml } from "./core/html-renderer.js"; // New import
 import type { RunEvent, RunOptions } from "./core/types.js"; // Updated path
 
 type Flags = {
@@ -20,7 +21,7 @@ type Flags = {
   top?: number;
   concurrency?: number;
   codeMode: boolean;
-  outputFormat: "json" | "markdown" | "yaml" | "dot"; // Added dot
+  outputFormat: "json" | "markdown" | "yaml" | "dot" | "html"; // Added html
   quiet: boolean;
   model?: string;
 };
@@ -38,7 +39,7 @@ function parse(argv: string[]): Flags {
       case "--context": f.context = readFileSync(argv[++i], "utf8"); break;
       case "--model": f.model = argv[++i]; break;
       case "--no-code-mode": f.codeMode = false; break;
-      case "--output": f.outputFormat = argv[++i] as "json" | "markdown" | "yaml" | "dot"; break; // Handle output format
+      case "--output": f.outputFormat = argv[++i] as "json" | "markdown" | "yaml" | "dot" | "html"; break; // Handle output format
       case "--quiet": f.quiet = true; break;
       case "-h":
       case "--help":
@@ -71,7 +72,7 @@ FLAGS
   --context PATH    file to inject as context (code, constraints, stack)
   --model NAME      override the SDK model
   --no-code-mode    don't bias frames toward engineering
-  --output FORMAT   output format: json, markdown, yaml, or dot (default markdown)
+  --output FORMAT   output format: json, markdown, yaml, dot, or html (default markdown)
   --quiet           suppress progress events
   -h, --help
 
@@ -117,6 +118,8 @@ async function main() {
     process.stdout.write(renderYaml(result) + "\n");
   } else if (flags.outputFormat === "dot") {
     process.stdout.write(renderGraphviz(result) + "\n");
+  } else if (flags.outputFormat === "html") {
+    process.stdout.write(renderHtml(result) + "\n");
   } else {
     process.stdout.write(renderMarkdown(result) + "\n");
   }
