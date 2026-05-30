@@ -3,7 +3,8 @@ import { run } from '../../../src/core/engine'; // Adjust path as needed
 import { renderMarkdown, renderJson, renderYaml, renderGraphviz } from '../../../src/core/render'; // Adjust path as needed
 import { renderHtml } from '../../../src/core/html-renderer'; // Adjust path as needed
 import { Graphviz } from 'graphviz-react'; // New import
-import type { RunResult } from '../../../src/core/types'; // Import RunResult type
+import type { RunResult, Idea, DeepenedIdea } from '../../../src/core/types'; // Import RunResult type
+import { createGitHubIssue } from '../../../src/core/integrations/github'; // New import
 import './App.css';
 
 function App() {
@@ -13,6 +14,9 @@ function App() {
   const [outputFormat, setOutputFormat] = useState<'markdown' | 'json' | 'yaml' | 'dot' | 'html'>('markdown');
   const [scoringSystemPrompt, setScoringSystemPrompt] = useState('');
   const [redTeamSystemPrompt, setRedTeamSystemPrompt] = useState('');
+  const [githubOwner, setGithubOwner] = useState('');
+  const [githubRepo, setGithubRepo] = useState('');
+  const [githubToken, setGithubToken] = useState('');
   const [history, setHistory] = useState<RunResult[]>([]); // New state for history
 
   // Load history from localStorage on component mount
@@ -62,6 +66,22 @@ function App() {
     setOutput('');
   };
 
+  const handleCreateGitHubIssue = async (idea: Idea | DeepenedIdea) => {
+    if (!githubOwner || !githubRepo || !githubToken) {
+      alert('Please provide GitHub Owner, Repository, and Personal Access Token.');
+      return;
+    }
+    try {
+      setLoading(true);
+      const issueUrl = await createGitHubIssue(idea, githubOwner, githubRepo, githubToken);
+      alert(`GitHub Issue created: ${issueUrl}`);
+    } catch (error) {
+      alert(`Failed to create GitHub issue: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="App">
       <h1>ADHD_Flow: Ideation Engine</h1>
@@ -88,6 +108,27 @@ function App() {
           onChange={(e) => setRedTeamSystemPrompt(e.target.value)}
           rows={3}
           cols={80}
+          disabled={loading}
+        />
+        <input
+          type="text"
+          placeholder="GitHub Owner (e.g., StuckInTheNet)"
+          value={githubOwner}
+          onChange={(e) => setGithubOwner(e.target.value)}
+          disabled={loading}
+        />
+        <input
+          type="text"
+          placeholder="GitHub Repository (e.g., ADHD_Flow)"
+          value={githubRepo}
+          onChange={(e) => setGithubRepo(e.target.value)}
+          disabled={loading}
+        />
+        <input
+          type="password"
+          placeholder="GitHub Personal Access Token"
+          value={githubToken}
+          onChange={(e) => setGithubToken(e.target.value)}
           disabled={loading}
         />
         <div className="controls">
