@@ -85,3 +85,7 @@ export function renderMarkdown(result: RunResult): string {
 
   return markdown;
 }
+
+export function renderJson(result: RunResult): string {
+  return JSON.stringify(result, null, 2);
+}

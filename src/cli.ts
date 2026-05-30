@@ -9,7 +9,7 @@
 
 import { readFileSync } from "node:fs";
 import { run } from "./core/engine.js"; // Updated path
-import { renderMarkdown } from "./core/render.js"; // Updated path and function
+import { renderMarkdown, renderJson } from "./core/render.js"; // Updated path and function
 import type { RunEvent, RunOptions } from "./core/types.js"; // Updated path
 
 type Flags = {
@@ -112,7 +112,7 @@ async function main() {
   const result = await run(opts);
 
   if (flags.outputFormat === "json") {
-    process.stdout.write(JSON.stringify(result, null, 2) + "\n");
+    process.stdout.write(renderJson(result) + "\n");
   } else {
     process.stdout.write(renderMarkdown(result) + "\n");
   }
