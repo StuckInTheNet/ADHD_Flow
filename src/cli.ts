@@ -63,10 +63,10 @@ function parse(argv: string[]): Flags {
       case "--create-issue-from-idea": f.createIssueFromIdeaId = argv[++i]; break;
       case "--linear-team-id": f.linearTeamId = argv[++i]; break;
       case "--linear-token": f.linearToken = argv[++i]; break;
-      case "--create-linear-issue-from-idea": f.createLinearIssueFromIdeaId = argv[++i]; break; // New
-      case "--notion-database-id": f.notionDatabaseId = argv[++i]; break; // New
-      case "--notion-token": f.notionToken = argv[++i]; break; // New
-      case "--create-notion-page-from-idea": f.createNotionPageFromIdeaId = argv[++i]; break; // New
+      case "--create-linear-issue-from-idea": f.createLinearIssueFromIdeaId = argv[++i]; break;
+      case "--notion-database-id": f.notionDatabaseId = argv[++i]; break;
+      case "--notion-token": f.notionToken = argv[++i]; break;
+      case "--create-notion-page-from-idea": f.createNotionPageFromIdeaId = argv[++i]; break;
       case "--quiet": f.quiet = true; break;
       case "-h":
       case "--help":
@@ -206,33 +206,6 @@ async function main() {
     );
     console.log(`Notion Page created: ${pageUrl}`);
   } else if (flags.outputFormat === "json") {
-    process.stdout.write(renderJson(result) + "\n");
-  } else if (flags.outputFormat === "yaml") {
-    process.stdout.write(renderYaml(result) + "\n");
-  } else if (flags.outputFormat === "dot") {
-    process.stdout.write(renderGraphviz(result) + "\n");
-  } else if (flags.outputFormat === "html") {
-    process.stdout.write(renderHtml(result) + "\n");
-  } else {
-    process.stdout.write(renderMarkdown(result) + "\n");
-  }
-  } else if (flags.createNotionPageFromIdeaId) {
-    if (!flags.notionDatabaseId || !flags.notionToken) {
-      console.error("Error: --notion-database-id and --notion-token are required to create a Notion page.");
-      process.exit(1);
-    }
-    const ideaToPage = result.shortlist.find(i => i.id === flags.createNotionPageFromIdeaId) ||
-                       result.deepened.find(d => d.ideaId === flags.createNotionPageFromIdeaId);
-    if (!ideaToPage) {
-      console.error(`Error: Idea with ID "${flags.createNotionPageFromIdeaId}" not found.`);
-      process.exit(1);
-    }
-    const pageUrl = await createNotionPage(
-      ideaToPage,
-      flags.notionDatabaseId,
-      flags.notionToken,
-    );
-    console.log(`Notion Page created: ${pageUrl}`);
     process.stdout.write(renderJson(result) + "\n");
   } else if (flags.outputFormat === "yaml") {
     process.stdout.write(renderYaml(result) + "\n");
