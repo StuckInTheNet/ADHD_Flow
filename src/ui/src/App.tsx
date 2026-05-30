@@ -170,6 +170,7 @@ import { Graphviz } from 'graphviz-react'; // New import
 import type { RunResult, Idea, DeepenedIdea } from '../../../src/core/types'; // Import RunResult type
 import { createGitHubIssue } from '../../../src/core/integrations/github'; // New import
 import { createLinearIssue } from '../../../src/core/integrations/linear'; // New import
+import { createNotionPage } from '../../../src/core/integrations/notion'; // New import
 import './App.css';
 
 function App() {
@@ -184,6 +185,8 @@ function App() {
   const [githubToken, setGithubToken] = useState('');
   const [linearTeamId, setLinearTeamId] = useState(''); // New
   const [linearToken, setLinearToken] = useState(''); // New
+  const [notionDatabaseId, setNotionDatabaseId] = useState(''); // New
+  const [notionToken, setNotionToken] = useState(''); // New
   const [history, setHistory] = useState<RunResult[]>([]); // New state for history
 
   // Load history from localStorage on component mount
@@ -265,6 +268,22 @@ function App() {
     }
   };
 
+  const handleCreateNotionPage = async (idea: Idea | DeepenedIdea) => {
+    if (!notionDatabaseId || !notionToken) {
+      alert('Please provide Notion Database ID and Integration Token.');
+      return;
+    }
+    try {
+      setLoading(true);
+      const pageUrl = await createNotionPage(idea, notionDatabaseId, notionToken);
+      alert(`Notion Page created: ${pageUrl}`);
+    } catch (error) {
+      alert(`Failed to create Notion page: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="App">
       <h1>ADHD_Flow: Ideation Engine</h1>
@@ -328,6 +347,20 @@ function App() {
           onChange={(e) => setLinearToken(e.target.value)}
           disabled={loading}
         />
+        <input
+          type="text"
+          placeholder="Notion Database ID"
+          value={notionDatabaseId}
+          onChange={(e) => setNotionDatabaseId(e.target.value)}
+          disabled={loading}
+        />
+        <input
+          type="password"
+          placeholder="Notion Integration Token"
+          value={notionToken}
+          onChange={(e) => setNotionToken(e.target.value)}
+          disabled={loading}
+        />
         <div className="controls">
           <select
             value={outputFormat}
@@ -375,6 +408,9 @@ function App() {
                 </button>
                 <button onClick={() => handleCreateLinearIssue(item.shortlist[0])} disabled={loading}>
                   Create Linear Issue
+                </button>
+                <button onClick={() => handleCreateNotionPage(item.shortlist[0])} disabled={loading}>
+                  Create Notion Page
                 </button>
               </li>
             ))}
