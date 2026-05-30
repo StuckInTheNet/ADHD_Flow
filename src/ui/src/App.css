@@ -71,6 +71,7 @@ button:hover:enabled {
   padding: 15px;
   border-radius: 5px;
   border: 1px solid var(--border);
+  margin-top: 20px;
 }
 
 .output-section h2 {
@@ -84,4 +85,38 @@ button:hover:enabled {
   font-family: var(--mono);
   color: var(--text);
   font-size: 14px;
+}
+
+.history-section {
+  width: 100%;
+  max-width: 800px;
+  text-align: left;
+  margin-top: 20px;
+  padding: 15px;
+  background-color: var(--code-bg);
+  border-radius: 5px;
+  border: 1px solid var(--border);
+}
+
+.history-section h2 {
+  margin-top: 0;
+  color: var(--text-h);
+}
+
+.history-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.history-section li {
+  margin-bottom: 5px;
+}
+
+.history-section a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.history-section a:hover {
+  text-decoration: underline;
 }
