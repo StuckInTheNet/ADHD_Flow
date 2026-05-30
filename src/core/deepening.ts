@@ -38,11 +38,16 @@ Output JSON:
   ]
 }`;
 
-  const raw = await callLLM({
-    model,
-    systemPrompt: DEEPEN_SYSTEM,
-    userPrompt,
-  });
+  let raw: string;
+  try {
+    raw = await callLLM({
+      model,
+      systemPrompt: DEEPEN_SYSTEM,
+      userPrompt,
+    });
+  } catch (error) {
+    return { ideaId: idea.id, sketch: "(deepen pass failed to parse)", childIdeas: [] };
+  }
 
   type Out = { sketch: string; childIdeas: { text: string; rationale?: string }[] };
   let parsed: Out;

@@ -21,11 +21,16 @@ ${ideas.map((i) => `${i.id} :: ${i.text}`).join("\n")}
 
 Output JSON: [{"label":"...","ideaIds":["...","..."]}]`;
 
-  const raw = await callLLM({
-    model,
-    systemPrompt: CLUSTER_SYSTEM,
-    userPrompt,
-  });
+  let raw: string;
+  try {
+    raw = await callLLM({
+      model,
+      systemPrompt: CLUSTER_SYSTEM,
+      userPrompt,
+    });
+  } catch (error) {
+    return [];
+  }
 
   try {
     return parseJSON<Cluster[]>(raw);

@@ -30,11 +30,16 @@ Output JSON array: [{"text": "...", "rationale": "..."}]
 - text: one phrase/sentence, the idea itself
 - rationale: 1 short clause on why this frame surfaces it (optional)`;
 
-  const raw = await callLLM({
-    model,
-    systemPrompt: DIVERGE_SYSTEM,
-    userPrompt,
-  });
+  let raw: string;
+  try {
+    raw = await callLLM({
+      model,
+      systemPrompt: DIVERGE_SYSTEM,
+      userPrompt,
+    });
+  } catch (error) {
+    return { frameId: frame.id, ideas: [] };
+  }
 
   type Row = { text: string; rationale?: string };
   let rows: Row[];

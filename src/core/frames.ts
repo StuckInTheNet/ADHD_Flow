@@ -13,7 +13,7 @@ export type Frame = {
   tags: ("code" | "design" | "general" | "wild")[];
 };
 
-class FrameRegistry {
+export class FrameRegistry {
   private frames: Map<string, Frame> = new Map();
 
   constructor() {
@@ -177,11 +177,44 @@ class FrameRegistry {
       : [...allFrames];
     const wild = allFrames.filter((f) => f.tags.includes("wild"));
 
-    const shuffled = [...pool].sort(() => Math.random() - 0.5);
-    const picked = shuffled.slice(0, Math.max(1, n - 1));
-    const wildPick = wild[Math.floor(Math.random() * wild.length)];
-    if (!picked.find((f) => f.id === wildPick.id)) picked.push(wildPick);
-    return picked.slice(0, n);
+    const selectedFrames: Frame[] = [];
+
+    // Ensure at least one wild frame is picked
+    if (wild.length > 0) {
+      const initialWildPick = wild[Math.floor(Math.random() * wild.length)];
+      selectedFrames.push(initialWildPick);
+    }
+
+    // Fill the rest of the slots with unique frames
+    const shuffledPool = [...pool].sort(() => Math.random() - 0.5);
+    for (const frame of shuffledPool) {
+      if (selectedFrames.length >= n) break;
+      if (!selectedFrames.find((f) => f.id === frame.id)) {
+        selectedFrames.push(frame);
+      }
+    }
+
+    // If we still don't have N frames, and there are more wild frames, add them
+    if (selectedFrames.length < n && wild.length > 0) {
+      const remainingWild = wild.filter(wf => !selectedFrames.find(sf => sf.id === wf.id));
+      const shuffledRemainingWild = [...remainingWild].sort(() => Math.random() - 0.5);
+      for (const frame of shuffledRemainingWild) {
+        if (selectedFrames.length >= n) break;
+        selectedFrames.push(frame);
+      }
+    }
+
+    // If we still don't have N frames, just fill with any unique frames
+    if (selectedFrames.length < n) {
+      const remainingFrames = allFrames.filter(af => !selectedFrames.find(sf => sf.id === af.id));
+      const shuffledRemaining = [...remainingFrames].sort(() => Math.random() - 0.5);
+      for (const frame of shuffledRemaining) {
+        if (selectedFrames.length >= n) break;
+        selectedFrames.push(frame);
+      }
+    }
+
+    return selectedFrames.slice(0, n); // Ensure exactly N frames are returned
   }
 }
 
