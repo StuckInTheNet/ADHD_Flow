@@ -95,15 +95,11 @@ p {
   margin: 0;
 }
 
-code,
-.counter {
+code {
   font-family: var(--mono);
   display: inline-flex;
   border-radius: 4px;
   color: var(--text-h);
-}
-
-code {
   font-size: 15px;
   line-height: 135%;
   padding: 4px 8px;
