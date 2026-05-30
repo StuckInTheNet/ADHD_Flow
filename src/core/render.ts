@@ -1,3 +1,4 @@
+import * as yaml from 'js-yaml'; // Import js-yaml
 import type { RunResult } from "./types.js";
 
 export function renderMarkdown(result: RunResult): string {
@@ -88,4 +89,8 @@ export function renderMarkdown(result: RunResult): string {
 
 export function renderJson(result: RunResult): string {
   return JSON.stringify(result, null, 2);
+}
+
+export function renderYaml(result: RunResult): string {
+  return yaml.dump(result);
 }

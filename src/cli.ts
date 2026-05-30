@@ -9,7 +9,7 @@
 
 import { readFileSync } from "node:fs";
 import { run } from "./core/engine.js"; // Updated path
-import { renderMarkdown, renderJson } from "./core/render.js"; // Updated path and function
+import { renderMarkdown, renderJson, renderYaml } from "./core/render.js"; // Updated path and function
 import type { RunEvent, RunOptions } from "./core/types.js"; // Updated path
 
 type Flags = {
@@ -20,7 +20,7 @@ type Flags = {
   top?: number;
   concurrency?: number;
   codeMode: boolean;
-  outputFormat: "json" | "markdown"; // Changed from json: boolean
+  outputFormat: "json" | "markdown" | "yaml"; // Added yaml
   quiet: boolean;
   model?: string;
 };
@@ -38,7 +38,7 @@ function parse(argv: string[]): Flags {
       case "--context": f.context = readFileSync(argv[++i], "utf8"); break;
       case "--model": f.model = argv[++i]; break;
       case "--no-code-mode": f.codeMode = false; break;
-      case "--output": f.outputFormat = argv[++i] as "json" | "markdown"; break; // Handle output format
+      case "--output": f.outputFormat = argv[++i] as "json" | "markdown" | "yaml"; break; // Handle output format
       case "--quiet": f.quiet = true; break;
       case "-h":
       case "--help":
@@ -71,7 +71,7 @@ FLAGS
   --context PATH    file to inject as context (code, constraints, stack)
   --model NAME      override the SDK model
   --no-code-mode    don't bias frames toward engineering
-  --output FORMAT   output format: json or markdown (default markdown)
+  --output FORMAT   output format: json, markdown, or yaml (default markdown)
   --quiet           suppress progress events
   -h, --help
 
@@ -113,6 +113,8 @@ async function main() {
 
   if (flags.outputFormat === "json") {
     process.stdout.write(renderJson(result) + "\n");
+  } else if (flags.outputFormat === "yaml") {
+    process.stdout.write(renderYaml(result) + "\n");
   } else {
     process.stdout.write(renderMarkdown(result) + "\n");
   }
