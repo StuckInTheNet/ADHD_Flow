@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { run } from '../../../src/core/engine'; // Adjust path as needed
 import { renderMarkdown, renderJson, renderYaml, renderGraphviz } from '../../../src/core/render'; // Adjust path as needed
 import { renderHtml } from '../../../src/core/html-renderer'; // Adjust path as needed
+import { Graphviz } from 'graphviz-react'; // New import
 import './App.css';
 
 function App() {
@@ -88,6 +89,8 @@ function App() {
         <h2>Results:</h2>
         {outputFormat === 'html' ? (
           <div dangerouslySetInnerHTML={{ __html: output }} />
+        ) : outputFormat === 'dot' ? (
+          <Graphviz dot={output} options={{ width: 800, height: 600, zoom: true }} />
         ) : (
           <pre>{output}</pre>
         )}
