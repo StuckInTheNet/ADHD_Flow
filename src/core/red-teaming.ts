@@ -10,6 +10,7 @@ export async function redTeamIdea(
   problem: string,
   idea: Idea,
   model: string | undefined,
+  systemPrompt: string | undefined, // New parameter
 ): Promise<string> {
   const userPrompt = `PROBLEM:
 ${problem}
@@ -20,11 +21,16 @@ ${idea.text}
 Find all the reasons why this idea will fail.
 Output JSON: {"critique": "..."}`;
 
-  const raw = await callLLM({
-    model,
-    systemPrompt: RED_TEAM_SYSTEM,
-    userPrompt,
-  });
+  let raw: string;
+  try {
+    raw = await callLLM({
+      model,
+      systemPrompt: systemPrompt || RED_TEAM_SYSTEM, // Use configurable prompt
+      userPrompt,
+    });
+  } catch (error) {
+    return "(red team pass failed to parse)";
+  }
 
   type Out = { critique: string };
   try {

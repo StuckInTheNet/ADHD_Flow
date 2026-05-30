@@ -1,8 +1,26 @@
-import { useState } => {
+import { useState } from 'react';
+import { run } from '../../../src/core/engine'; // Adjust path as needed
+import { renderMarkdown, renderJson, renderYaml, renderGraphviz } from '../../../src/core/render'; // Adjust path as needed
+import { renderHtml } from '../../../src/core/html-renderer'; // Adjust path as needed
+import './App.css';
+
+function App() {
+  const [problem, setProblem] = useState('');
+  const [output, setOutput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [outputFormat, setOutputFormat] = useState<'markdown' | 'json' | 'yaml' | 'dot' | 'html'>('markdown');
+  const [scoringSystemPrompt, setScoringSystemPrompt] = useState('');
+  const [redTeamSystemPrompt, setRedTeamSystemPrompt] = useState('');
+
+  const handleRunAdhdFlow = async () => {
     setLoading(true);
     setOutput('Generating ideas...');
     try {
-      const result = await run({ problem });
+      const result = await run({
+        problem,
+        scoringSystemPrompt: scoringSystemPrompt || undefined,
+        redTeamSystemPrompt: redTeamSystemPrompt || undefined,
+      });
       if (outputFormat === 'json') {
         setOutput(renderJson(result));
       } else if (outputFormat === 'yaml') {
@@ -30,6 +48,22 @@ import { useState } => {
           value={problem}
           onChange={(e) => setProblem(e.target.value)}
           rows={10}
+          cols={80}
+          disabled={loading}
+        />
+        <textarea
+          placeholder="Custom Scoring System Prompt (optional)"
+          value={scoringSystemPrompt}
+          onChange={(e) => setScoringSystemPrompt(e.target.value)}
+          rows={3}
+          cols={80}
+          disabled={loading}
+        />
+        <textarea
+          placeholder="Custom Red Team System Prompt (optional)"
+          value={redTeamSystemPrompt}
+          onChange={(e) => setRedTeamSystemPrompt(e.target.value)}
+          rows={3}
           cols={80}
           disabled={loading}
         />

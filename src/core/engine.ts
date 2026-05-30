@@ -40,6 +40,8 @@ export async function run(opts: RunOptions): Promise<RunResult> {
     codeMode = true,
     model,
     scoringWeights,
+    scoringSystemPrompt, // New
+    redTeamSystemPrompt, // New
     onEvent,
   } = opts;
 
@@ -62,7 +64,7 @@ export async function run(opts: RunOptions): Promise<RunResult> {
 
   // PHASE 2 — SCORE + CLUSTER. Critic comes back online.
   const [scoreMap, clusters] = await Promise.all([
-    scoreIdeas(problem, allIdeas, model, scoringWeights),
+    scoreIdeas(problem, allIdeas, model, scoringWeights, scoringSystemPrompt), // Pass scoringSystemPrompt
     clusterIdeas(problem, allIdeas, model),
   ]);
   for (const i of allIdeas) i.score = scoreMap.get(i.id);
@@ -99,8 +101,7 @@ export async function run(opts: RunOptions): Promise<RunResult> {
         onEvent?.({ kind: "deepen:start", ideaId: idea.id, text: idea.text });
         const [d, redTeamCritique] = await Promise.all([
           deepenIdea(problem, idea, allIdeas, model),
-          redTeamIdea(problem, idea, model),
-        ]);
+          redTeamIdea(problem, idea, model, redTeamSystemPrompt), // Pass redTeamSystemPrompt
         d.redTeamCritique = redTeamCritique;
         onEvent?.({ kind: "deepen:done", ideaId: idea.id });
         return d;

@@ -21,9 +21,11 @@ type Flags = {
   top?: number;
   concurrency?: number;
   codeMode: boolean;
-  outputFormat: "json" | "markdown" | "yaml" | "dot" | "html"; // Added html
+  outputFormat: "json" | "markdown" | "yaml" | "dot" | "html";
   quiet: boolean;
   model?: string;
+  scoringSystemPrompt?: string; // New
+  redTeamSystemPrompt?: string; // New
 };
 
 function parse(argv: string[]): Flags {
@@ -40,6 +42,8 @@ function parse(argv: string[]): Flags {
       case "--model": f.model = argv[++i]; break;
       case "--no-code-mode": f.codeMode = false; break;
       case "--output": f.outputFormat = argv[++i] as "json" | "markdown" | "yaml" | "dot" | "html"; break; // Handle output format
+      case "--scoring-prompt": f.scoringSystemPrompt = readFileSync(argv[++i], "utf8"); break; // New
+      case "--red-team-prompt": f.redTeamSystemPrompt = readFileSync(argv[++i], "utf8"); break; // New
       case "--quiet": f.quiet = true; break;
       case "-h":
       case "--help":
@@ -73,6 +77,8 @@ FLAGS
   --model NAME      override the SDK model
   --no-code-mode    don't bias frames toward engineering
   --output FORMAT   output format: json, markdown, yaml, dot, or html (default markdown)
+  --scoring-prompt PATH file to inject as custom scoring system prompt
+  --red-team-prompt PATH file to inject as custom red team system prompt
   --quiet           suppress progress events
   -h, --help
 
@@ -107,6 +113,8 @@ async function main() {
     concurrency: flags.concurrency,
     codeMode: flags.codeMode,
     model: flags.model,
+    scoringSystemPrompt: flags.scoringSystemPrompt, // New
+    redTeamSystemPrompt: flags.redTeamSystemPrompt, // New
     onEvent,
   };
 

@@ -68,6 +68,8 @@ export type RunOptions = {
   codeMode?: boolean;                  // bias frames toward engineering
   model?: string;                      // override SDK model
   scoringWeights?: ScoringWeights;     // override default scoring weights
+  scoringSystemPrompt?: string;        // override default scoring system prompt
+  redTeamSystemPrompt?: string;        // override default red team system prompt
   onEvent?: (e: RunEvent) => void;     // stream progress to caller/CLI
 };
 

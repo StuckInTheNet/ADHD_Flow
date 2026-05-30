@@ -19,6 +19,7 @@ export async function scoreIdeas(
   ideas: Idea[],
   model: string | undefined,
   scoringWeights: ScoringWeights | undefined,
+  systemPrompt: string | undefined, // New parameter
 ): Promise<Map<string, Score>> {
   if (ideas.length === 0) return new Map();
 
@@ -31,11 +32,16 @@ ${ideas.map((i) => `${i.id} :: ${i.text}`).join("\n")}
 Score each. Output JSON array:
 [{"id":"...","novelty":0-10,"viability":0-10,"fit":0-10,"impact":0-10,"effort":0-10,"risk":0-10,"trap":"... or omit"}]`;
 
-  const raw = await callLLM({
-    model,
-    systemPrompt: SCORE_SYSTEM,
-    userPrompt,
-  });
+  let raw: string;
+  try {
+    raw = await callLLM({
+      model,
+      systemPrompt: systemPrompt || SCORE_SYSTEM, // Use configurable prompt
+      userPrompt,
+    });
+  } catch (error) {
+    return new Map();
+  }
 
   type Row = { id: string; novelty: number; viability: number; fit: number; impact: number; effort: number; risk: number; trap?: string };
   let rows: Row[];
