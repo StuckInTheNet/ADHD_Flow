@@ -1,0 +1,61 @@
+// Thin wrapper around the Claude Agent SDK's `query` function.
+// We use it as a stateless one-shot: each call gets a fresh session
+// with a tight system prompt and the user's problem framing.
+//
+// Each divergent branch is its own query() call so they run in true
+// parallel — this is the "ADHD" fan-out. Branches don't see each other's
+// output during divergence (mixing kills idea quality).
+
+import { query } from "@anthropic-ai/claude-agent-sdk";
+
+export type LLMOptions = {
+  model?: string;
+  systemPrompt: string;
+  userPrompt: string;
+};
+
+export async function callLLM(opts: LLMOptions): Promise<string> {
+  const chunks: string[] = [];
+
+  const iter = query({
+    prompt: opts.userPrompt,
+    options: {
+      model: opts.model,
+      systemPrompt: { type: "preset", preset: "claude_code", append: opts.systemPrompt },
+      // No tools — divergence is pure generation. Tools = convergence pressure.
+      allowedTools: [],
+      permissionMode: "bypassPermissions",
+    },
+  });
+
+  for await (const message of iter) {
+    if (message.type === "assistant") {
+      for (const block of message.message.content) {
+        if (block.type === "text") chunks.push(block.text);
+      }
+    }
+    if (message.type === "result" && message.subtype !== "success") {
+      throw new Error(`LLM call failed: ${message.subtype}`);
+    }
+  }
+
+  return chunks.join("").trim();
+}
+
+// Strip ```json fences and parse. LLMs love to wrap.
+export function parseJSON<T>(raw: string): T {
+  let s = raw.trim();
+  const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fence) s = fence[1].trim();
+  // Find the first { or [ — sometimes there's a preamble despite instructions.
+  const firstObj = s.indexOf("{");
+  const firstArr = s.indexOf("[");
+  const start =
+    firstObj === -1
+      ? firstArr
+      : firstArr === -1
+      ? firstObj
+      : Math.min(firstObj, firstArr);
+  if (start > 0) s = s.slice(start);
+  return JSON.parse(s) as T;
+}
