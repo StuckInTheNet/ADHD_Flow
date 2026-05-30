@@ -15,6 +15,7 @@ import { createGitHubIssue } from "./core/integrations/github.js"; // New import
 import { createLinearIssue } from "./core/integrations/linear.js"; // New import
 import { createNotionPage } from "./core/integrations/notion.js"; // New import
 import { createGoogleDoc } from "./core/integrations/google-docs.js"; // New import
+import { postToSlack } from "./core/integrations/slack.js"; // New import
 import type { RunEvent, RunOptions } from "./core/types.js"; // Updated path
 
 type Flags = {
@@ -40,8 +41,11 @@ type Flags = {
   notionDatabaseId?: string;
   notionToken?: string;
   createNotionPageFromIdeaId?: string;
-  googleDocsAccessToken?: string; // New
-  createGoogleDocFromIdeaId?: string; // New
+  googleDocsAccessToken?: string;
+  createGoogleDocFromIdeaId?: string;
+  slackChannel?: string;
+  slackToken?: string;
+  postToSlackFromIdeaId?: string;
 };
 
 function parse(argv: string[]): Flags {
@@ -70,8 +74,11 @@ function parse(argv: string[]): Flags {
       case "--notion-database-id": f.notionDatabaseId = argv[++i]; break;
       case "--notion-token": f.notionToken = argv[++i]; break;
       case "--create-notion-page-from-idea": f.createNotionPageFromIdeaId = argv[++i]; break;
-      case "--google-docs-access-token": f.googleDocsAccessToken = argv[++i]; break; // New
-      case "--create-google-doc-from-idea": f.createGoogleDocFromIdeaId = argv[++i]; break; // New
+      case "--google-docs-access-token": f.googleDocsAccessToken = argv[++i]; break;
+      case "--create-google-doc-from-idea": f.createGoogleDocFromIdeaId = argv[++i]; break;
+      case "--slack-channel": f.slackChannel = argv[++i]; break;
+      case "--slack-token": f.slackToken = argv[++i]; break;
+      case "--post-to-slack-from-idea": f.postToSlackFromIdeaId = argv[++i]; break;
       case "--quiet": f.quiet = true; break;
       case "-h":
       case "--help":
@@ -119,6 +126,9 @@ FLAGS
   --create-notion-page-from-idea ID Create Notion page from a specific idea ID
   --google-docs-access-token TOKEN Google Docs OAuth2 Access Token (for doc creation)
   --create-google-doc-from-idea ID Create Google Doc from a specific idea ID
+  --slack-channel CHANNEL Slack channel ID or name (for posting messages)
+  --slack-token TOKEN   Slack Bot User OAuth Token (for posting messages)
+  --post-to-slack-from-idea ID Post to Slack from a specific idea ID
   --quiet           suppress progress events
   -h, --help
 
@@ -228,6 +238,23 @@ async function main() {
       flags.googleDocsAccessToken,
     );
     console.log(`Google Doc created: ${docUrl}`);
+  } else if (flags.postToSlackFromIdeaId) {
+    if (!flags.slackChannel || !flags.slackToken) {
+      console.error("Error: --slack-channel and --slack-token are required to post to Slack.");
+      process.exit(1);
+    }
+    const ideaToPost = result.shortlist.find(i => i.id === flags.postToSlackFromIdeaId) ||
+                       result.deepened.find(d => d.ideaId === flags.postToSlackFromIdeaId);
+    if (!ideaToPost) {
+      console.error(`Error: Idea with ID "${flags.postToSlackFromIdeaId}" not found.`);
+      process.exit(1);
+    }
+    const slackUrl = await postToSlack(
+      ideaToPost,
+      flags.slackChannel,
+      flags.slackToken,
+    );
+    console.log(`Slack message posted: ${slackUrl}`);
   } else if (flags.outputFormat === "json") {
     process.stdout.write(renderJson(result) + "\n");
   } else if (flags.outputFormat === "yaml") {
