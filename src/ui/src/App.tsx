@@ -7,6 +7,7 @@ import type { RunResult, Idea, DeepenedIdea } from '../../../src/core/types'; //
 import { createGitHubIssue } from '../../../src/core/integrations/github'; // New import
 import { createLinearIssue } from '../../../src/core/integrations/linear'; // New import
 import { createNotionPage } from '../../../src/core/integrations/notion'; // New import
+import { createGoogleDoc } from '../../../src/core/integrations/google-docs'; // New import
 import './App.css';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
   const [linearToken, setLinearToken] = useState(''); // New
   const [notionDatabaseId, setNotionDatabaseId] = useState(''); // New
   const [notionToken, setNotionToken] = useState(''); // New
+  const [googleDocsAccessToken, setGoogleDocsAccessToken] = useState(''); // New
   const [history, setHistory] = useState<RunResult[]>([]); // New state for history
 
   // Load history from localStorage on component mount
@@ -120,6 +122,22 @@ function App() {
     }
   };
 
+  const handleCreateGoogleDoc = async (idea: Idea | DeepenedIdea) => {
+    if (!googleDocsAccessToken) {
+      alert('Please provide Google Docs Access Token.');
+      return;
+    }
+    try {
+      setLoading(true);
+      const docUrl = await createGoogleDoc(idea, googleDocsAccessToken);
+      alert(`Google Doc created: ${docUrl}`);
+    } catch (error) {
+      alert(`Failed to create Google Doc: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="App">
       <h1>ADHD_Flow: Ideation Engine</h1>
@@ -197,6 +215,13 @@ function App() {
           onChange={(e) => setNotionToken(e.target.value)}
           disabled={loading}
         />
+        <input
+          type="password"
+          placeholder="Google Docs Access Token"
+          value={googleDocsAccessToken}
+          onChange={(e) => setGoogleDocsAccessToken(e.target.value)}
+          disabled={loading}
+        />
         <div className="controls">
           <select
             value={outputFormat}
@@ -247,6 +272,9 @@ function App() {
                 </button>
                 <button onClick={() => handleCreateNotionPage(item.shortlist[0])} disabled={loading}>
                   Create Notion Page
+                </button>
+                <button onClick={() => handleCreateGoogleDoc(item.shortlist[0])} disabled={loading}>
+                  Create Google Doc
                 </button>
               </li>
             ))}
