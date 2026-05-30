@@ -11,6 +11,8 @@ import { readFileSync } from "node:fs";
 import { run } from "./core/engine.js"; // Updated path
 import { renderMarkdown, renderJson, renderYaml, renderGraphviz } from "./core/render.js"; // Updated path and function
 import { renderHtml } from "./core/html-renderer.js"; // New import
+import { createGitHubIssue } from "./core/integrations/github.js"; // New import
+import { createLinearIssue } from "./core/integrations/linear.js"; // New import
 import type { RunEvent, RunOptions } from "./core/types.js"; // Updated path
 
 type Flags = {
@@ -26,10 +28,13 @@ type Flags = {
   model?: string;
   scoringSystemPrompt?: string;
   redTeamSystemPrompt?: string;
-  githubOwner?: string; // New
-  githubRepo?: string;  // New
-  githubToken?: string; // New
-  createIssueFromIdeaId?: string; // New
+  githubOwner?: string;
+  githubRepo?: string;
+  githubToken?: string;
+  createIssueFromIdeaId?: string;
+  linearTeamId?: string;
+  linearToken?: string;
+  createLinearIssueFromIdeaId?: string;
 };
 
 function parse(argv: string[]): Flags {
@@ -46,12 +51,15 @@ function parse(argv: string[]): Flags {
       case "--model": f.model = argv[++i]; break;
       case "--no-code-mode": f.codeMode = false; break;
       case "--output": f.outputFormat = argv[++i] as "json" | "markdown" | "yaml" | "dot" | "html"; break; // Handle output format
-      case "--scoring-prompt": f.scoringSystemPrompt = readFileSync(argv[++i], "utf8"); break; // New
-      case "--red-team-prompt": f.redTeamSystemPrompt = readFileSync(argv[++i], "utf8"); break; // New
-      case "--github-owner": f.githubOwner = argv[++i]; break; // New
-      case "--github-repo": f.githubRepo = argv[++i]; break; // New
-      case "--github-token": f.githubToken = argv[++i]; break; // New
-      case "--create-issue-from-idea": f.createIssueFromIdeaId = argv[++i]; break; // New
+      case "--scoring-prompt": f.scoringSystemPrompt = readFileSync(argv[++i], "utf8"); break;
+      case "--red-team-prompt": f.redTeamSystemPrompt = readFileSync(argv[++i], "utf8"); break;
+      case "--github-owner": f.githubOwner = argv[++i]; break;
+      case "--github-repo": f.githubRepo = argv[++i]; break;
+      case "--github-token": f.githubToken = argv[++i]; break;
+      case "--create-issue-from-idea": f.createIssueFromIdeaId = argv[++i]; break;
+      case "--linear-team-id": f.linearTeamId = argv[++i]; break;
+      case "--linear-token": f.linearToken = argv[++i]; break;
+      case "--create-linear-issue-from-idea": f.createLinearIssueFromIdeaId = argv[++i]; break;
       case "--quiet": f.quiet = true; break;
       case "-h":
       case "--help":
@@ -91,6 +99,9 @@ FLAGS
   --github-repo REPO   GitHub repository name (for issue creation)
   --github-token TOKEN GitHub Personal Access Token (for issue creation)
   --create-issue-from-idea ID Create GitHub issue from a specific idea ID
+  --linear-team-id ID   Linear team ID (for issue creation)
+  --linear-token TOKEN  Linear Personal Access Token (for issue creation)
+  --create-linear-issue-from-idea ID Create Linear issue from a specific idea ID
   --quiet           suppress progress events
   -h, --help
 
@@ -125,8 +136,8 @@ async function main() {
     concurrency: flags.concurrency,
     codeMode: flags.codeMode,
     model: flags.model,
-    scoringSystemPrompt: flags.scoringSystemPrompt, // New
-    redTeamSystemPrompt: flags.redTeamSystemPrompt, // New
+    scoringSystemPrompt: flags.scoringSystemPrompt,
+    redTeamSystemPrompt: flags.redTeamSystemPrompt,
     onEvent,
   };
 
@@ -150,6 +161,23 @@ async function main() {
       flags.githubToken,
     );
     console.log(`GitHub Issue created: ${issueUrl}`);
+  } else if (flags.createLinearIssueFromIdeaId) {
+    if (!flags.linearTeamId || !flags.linearToken) {
+      console.error("Error: --linear-team-id and --linear-token are required to create a Linear issue.");
+      process.exit(1);
+    }
+    const ideaToIssue = result.shortlist.find(i => i.id === flags.createLinearIssueFromIdeaId) ||
+                       result.deepened.find(d => d.ideaId === flags.createLinearIssueFromIdeaId);
+    if (!ideaToIssue) {
+      console.error(`Error: Idea with ID "${flags.createLinearIssueFromIdeaId}" not found.`);
+      process.exit(1);
+    }
+    const issueUrl = await createLinearIssue(
+      ideaToIssue,
+      flags.linearTeamId,
+      flags.linearToken,
+    );
+    console.log(`Linear Issue created: ${issueUrl}`);
   } else if (flags.outputFormat === "json") {
     process.stdout.write(renderJson(result) + "\n");
   } else if (flags.outputFormat === "yaml") {
