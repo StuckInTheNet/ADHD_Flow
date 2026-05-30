@@ -24,8 +24,12 @@ type Flags = {
   outputFormat: "json" | "markdown" | "yaml" | "dot" | "html";
   quiet: boolean;
   model?: string;
-  scoringSystemPrompt?: string; // New
-  redTeamSystemPrompt?: string; // New
+  scoringSystemPrompt?: string;
+  redTeamSystemPrompt?: string;
+  githubOwner?: string; // New
+  githubRepo?: string;  // New
+  githubToken?: string; // New
+  createIssueFromIdeaId?: string; // New
 };
 
 function parse(argv: string[]): Flags {
@@ -44,6 +48,10 @@ function parse(argv: string[]): Flags {
       case "--output": f.outputFormat = argv[++i] as "json" | "markdown" | "yaml" | "dot" | "html"; break; // Handle output format
       case "--scoring-prompt": f.scoringSystemPrompt = readFileSync(argv[++i], "utf8"); break; // New
       case "--red-team-prompt": f.redTeamSystemPrompt = readFileSync(argv[++i], "utf8"); break; // New
+      case "--github-owner": f.githubOwner = argv[++i]; break; // New
+      case "--github-repo": f.githubRepo = argv[++i]; break; // New
+      case "--github-token": f.githubToken = argv[++i]; break; // New
+      case "--create-issue-from-idea": f.createIssueFromIdeaId = argv[++i]; break; // New
       case "--quiet": f.quiet = true; break;
       case "-h":
       case "--help":
@@ -79,6 +87,10 @@ FLAGS
   --output FORMAT   output format: json, markdown, yaml, dot, or html (default markdown)
   --scoring-prompt PATH file to inject as custom scoring system prompt
   --red-team-prompt PATH file to inject as custom red team system prompt
+  --github-owner OWNER GitHub repository owner (for issue creation)
+  --github-repo REPO   GitHub repository name (for issue creation)
+  --github-token TOKEN GitHub Personal Access Token (for issue creation)
+  --create-issue-from-idea ID Create GitHub issue from a specific idea ID
   --quiet           suppress progress events
   -h, --help
 
@@ -120,7 +132,25 @@ async function main() {
 
   const result = await run(opts);
 
-  if (flags.outputFormat === "json") {
+  if (flags.createIssueFromIdeaId) {
+    if (!flags.githubOwner || !flags.githubRepo || !flags.githubToken) {
+      console.error("Error: --github-owner, --github-repo, and --github-token are required to create a GitHub issue.");
+      process.exit(1);
+    }
+    const ideaToIssue = result.shortlist.find(i => i.id === flags.createIssueFromIdeaId) ||
+                       result.deepened.find(d => d.ideaId === flags.createIssueFromIdeaId);
+    if (!ideaToIssue) {
+      console.error(`Error: Idea with ID "${flags.createIssueFromIdeaId}" not found.`);
+      process.exit(1);
+    }
+    const issueUrl = await createGitHubIssue(
+      ideaToIssue,
+      flags.githubOwner,
+      flags.githubRepo,
+      flags.githubToken,
+    );
+    console.log(`GitHub Issue created: ${issueUrl}`);
+  } else if (flags.outputFormat === "json") {
     process.stdout.write(renderJson(result) + "\n");
   } else if (flags.outputFormat === "yaml") {
     process.stdout.write(renderYaml(result) + "\n");
