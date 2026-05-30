@@ -69,7 +69,7 @@ function parse(argv: string[]): Flags {
       case "--create-linear-issue-from-idea": f.createLinearIssueFromIdeaId = argv[++i]; break;
       case "--notion-database-id": f.notionDatabaseId = argv[++i]; break;
       case "--notion-token": f.notionToken = argv[++i]; break;
-      case "--create-notion-page-from-idea": f.createNotionPageFromIdeaId = argv[++i]; break; // New
+      case "--create-notion-page-from-idea": f.createNotionPageFromIdeaId = argv[++i]; break;
       case "--google-docs-access-token": f.googleDocsAccessToken = argv[++i]; break; // New
       case "--create-google-doc-from-idea": f.createGoogleDocFromIdeaId = argv[++i]; break; // New
       case "--quiet": f.quiet = true; break;
@@ -228,23 +228,7 @@ async function main() {
       flags.googleDocsAccessToken,
     );
     console.log(`Google Doc created: ${docUrl}`);
-  }
-  } else if (flags.createGoogleDocFromIdeaId) {
-    if (!flags.googleDocsAccessToken) {
-      console.error("Error: --google-docs-access-token is required to create a Google Doc.");
-      process.exit(1);
-    }
-    const ideaToDoc = result.shortlist.find(i => i.id === flags.createGoogleDocFromIdeaId) ||
-                      result.deepened.find(d => d.ideaId === flags.createGoogleDocFromIdeaId);
-    if (!ideaToDoc) {
-      console.error(`Error: Idea with ID "${flags.createGoogleDocFromIdeaId}" not found.`);
-      process.exit(1);
-    }
-    const docUrl = await createGoogleDoc(
-      ideaToDoc,
-      flags.googleDocsAccessToken,
-    );
-    console.log(`Google Doc created: ${docUrl}`);
+  } else if (flags.outputFormat === "json") {
     process.stdout.write(renderJson(result) + "\n");
   } else if (flags.outputFormat === "yaml") {
     process.stdout.write(renderYaml(result) + "\n");
