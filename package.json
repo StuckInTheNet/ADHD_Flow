@@ -1,0 +1,25 @@
+{
+  "name": "adhd_flow",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/StuckInTheNet/ADHD_Flow.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/StuckInTheNet/ADHD_Flow/issues"
+  },
+  "homepage": "https://github.com/StuckInTheNet/ADHD_Flow#readme"
+}
