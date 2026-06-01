@@ -1,12 +1,20 @@
 import type { RunResult } from "./types.js";
 
+function htmlEscape(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 export function renderHtml(result: RunResult): string {
   let html = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADHD_Flow Report for "${result.problem}"</title>
+    <title>ADHD_Flow Report for "${htmlEscape(result.problem)}"</title>
     <style>
         body { font-family: sans-serif; line-height: 1.6; margin: 20px; background-color: #f4f4f4; color: #333; }
         .container { max-width: 900px; margin: auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -24,24 +32,24 @@ export function renderHtml(result: RunResult): string {
 </head>
 <body>
     <div class="container">
-        <h1>ADHD_Flow Analysis for "${result.problem}"</h1>
+        <h1>ADHD_Flow Analysis for "${htmlEscape(result.problem)}"</h1>
 
         <h2>Shortlist of Ideas</h2>
         ${result.shortlist.map((idea, index) => `
             <div class="idea-card">
-                <h3>${index + 1}. ${idea.text}</h3>
+                <h3>${index + 1}. ${htmlEscape(idea.text)}</h3>
                 <p class="score">Novelty: ${idea.score?.novelty}, Viability: ${idea.score?.viability}, Fit: ${idea.score?.fit}, Impact: ${idea.score?.impact}, Effort: ${idea.score?.effort}, Risk: ${idea.score?.risk}</p>
-                ${idea.rationale ? `<p><em>Rationale: ${idea.rationale}</em></p>` : ''}
-                ${idea.cluster ? `<p><em>Cluster: ${idea.cluster}</em></p>` : ''}
+                ${idea.rationale ? `<p><em>Rationale: ${htmlEscape(idea.rationale)}</em></p>` : ''}
+                ${idea.cluster ? `<p><em>Cluster: ${htmlEscape(idea.cluster)}</em></p>` : ''}
             </div>
         `).join('')}
 
         ${result.nonObviousPick ? `
         <h2>Non-obvious Pick</h2>
         <div class="idea-card">
-            <h3>${result.nonObviousPick.text}</h3>
+            <h3>${htmlEscape(result.nonObviousPick.text)}</h3>
             <p class="score">Novelty: ${result.nonObviousPick.score?.novelty}, Viability: ${result.nonObviousPick.score?.viability}, Fit: ${result.nonObviousPick.score?.fit}, Impact: ${result.nonObviousPick.score?.impact}, Effort: ${result.nonObviousPick.score?.effort}, Risk: ${result.nonObviousPick.score?.risk}</p>
-            ${result.nonObviousPick.rationale ? `<p><em>Rationale: ${result.nonObviousPick.rationale}</em></p>` : ''}
+            ${result.nonObviousPick.rationale ? `<p><em>Rationale: ${htmlEscape(result.nonObviousPick.rationale)}</em></p>` : ''}
         </div>
         ` : ''}
 
@@ -51,13 +59,13 @@ export function renderHtml(result: RunResult): string {
             const originalIdea = result.shortlist.find(idea => idea.id === deepenedIdea.ideaId);
             return `
                 <div class="idea-card">
-                    <h3>${index + 1}. ${originalIdea ? originalIdea.text : 'Deepened Idea'}</h3>
-                    <p><strong>Sketch:</strong> ${deepenedIdea.sketch}</p>
-                    ${deepenedIdea.redTeamCritique ? `<p class="red-team"><strong>Red Team Critique:</strong> ${deepenedIdea.redTeamCritique}</p>` : ''}
+                    <h3>${index + 1}. ${originalIdea ? htmlEscape(originalIdea.text) : 'Deepened Idea'}</h3>
+                    <p><strong>Sketch:</strong> ${htmlEscape(deepenedIdea.sketch)}</p>
+                    ${deepenedIdea.redTeamCritique ? `<p class="red-team"><strong>Red Team Critique:</strong> ${htmlEscape(deepenedIdea.redTeamCritique)}</p>` : ''}
                     ${deepenedIdea.childIdeas.length > 0 ? `
                         <p><strong>Child Ideas:</strong></p>
                         <ul>
-                            ${deepenedIdea.childIdeas.map(childIdea => `<li>${childIdea.text} (${childIdea.rationale})</li>`).join('')}
+                            ${deepenedIdea.childIdeas.map(childIdea => `<li>${htmlEscape(childIdea.text)} (${htmlEscape(childIdea.rationale ?? '')})</li>`).join('')}
                         </ul>
                     ` : ''}
                 </div>
@@ -69,8 +77,8 @@ export function renderHtml(result: RunResult): string {
         <h2>Potential Traps</h2>
         ${result.traps.map((trap, index) => `
             <div class="idea-card trap">
-                <h3>${index + 1}. ${trap.text}</h3>
-                ${trap.score?.trap ? `<p><em>Reason: ${trap.score.trap}</em></p>` : ''}
+                <h3>${index + 1}. ${htmlEscape(trap.text)}</h3>
+                ${trap.score?.trap ? `<p><em>Reason: ${htmlEscape(trap.score.trap)}</em></p>` : ''}
             </div>
         `).join('')}
         ` : ''}
@@ -79,11 +87,11 @@ export function renderHtml(result: RunResult): string {
         <h2>Idea Clusters</h2>
         ${result.clusters.map(cluster => `
             <div class="cluster-card">
-                <h3>${cluster.label}</h3>
+                <h3>${htmlEscape(cluster.label)}</h3>
                 <ul>
                     ${cluster.ideaIds.map(ideaId => {
                         const idea = result.branches.flatMap(b => b.ideas).find(i => i.id === ideaId);
-                        return idea ? `<li>${idea.text}</li>` : '';
+                        return idea ? `<li>${htmlEscape(idea.text)}</li>` : '';
                     }).join('')}
                 </ul>
             </div>
@@ -93,7 +101,7 @@ export function renderHtml(result: RunResult): string {
         ${result.provocation ? `
         <div class="provocation">
             <h2>Provocation</h2>
-            <p>${result.provocation}</p>
+            <p>${htmlEscape(result.provocation)}</p>
         </div>
         ` : ''}
     </div>
