@@ -40,6 +40,7 @@ Score each. Output JSON array:
       userPrompt,
     });
   } catch (error) {
+    process.stderr.write(`  ! scoring failed: ${error instanceof Error ? error.message : error}\n`);
     return new Map();
   }
 
@@ -48,6 +49,7 @@ Score each. Output JSON array:
   try {
     rows = parseJSON<Row[]>(raw);
   } catch {
+    process.stderr.write(`  ! scoring parse failed — raw response was not valid JSON\n`);
     return new Map();
   }
 

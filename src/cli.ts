@@ -7,8 +7,8 @@
 //   adhd-flow "..." --output json > result.json
 //   adhd-flow "..." --output markdown > result.md
 
-import { readFileSync } from "node:fs";
-import { run } from "./core/engine.js"; // Updated path
+import { readFileSync, existsSync } from "node:fs";
+import { run } from "./core/engine.js";
 import { renderMarkdown, renderJson, renderYaml, renderGraphviz } from "./core/render.js"; // Updated path and function
 import { renderHtml } from "./core/html-renderer.js"; // New import
 import { createGitHubIssue } from "./core/integrations/github.js"; // New import
@@ -48,22 +48,49 @@ type Flags = {
   postToSlackFromIdeaId?: string;
 };
 
+function parsePositiveInt(flag: string, value: string): number {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 1 || !Number.isInteger(n)) {
+    console.error(`Error: ${flag} requires a positive integer, got "${value}"`);
+    process.exit(1);
+  }
+  return n;
+}
+
+function readRequiredFile(flag: string, path: string): string {
+  if (!path || !existsSync(path)) {
+    console.error(`Error: ${flag} file not found: ${path}`);
+    process.exit(1);
+  }
+  return readFileSync(path, "utf8");
+}
+
+const VALID_OUTPUT_FORMATS = new Set(["json", "markdown", "yaml", "dot", "html"]);
+
 function parse(argv: string[]): Flags {
-  const f: Flags = { problem: "", codeMode: true, outputFormat: "markdown", quiet: false }; // Default to markdown
+  const f: Flags = { problem: "", codeMode: true, outputFormat: "markdown", quiet: false };
   const rest: string[] = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     switch (a) {
-      case "--frames": f.frames = Number(argv[++i]); break;
-      case "--ideas": f.ideas = Number(argv[++i]); break;
-      case "--top": f.top = Number(argv[++i]); break;
-      case "--concurrency": f.concurrency = Number(argv[++i]); break;
-      case "--context": f.context = readFileSync(argv[++i], "utf8"); break;
+      case "--frames": f.frames = parsePositiveInt("--frames", argv[++i]); break;
+      case "--ideas": f.ideas = parsePositiveInt("--ideas", argv[++i]); break;
+      case "--top": f.top = parsePositiveInt("--top", argv[++i]); break;
+      case "--concurrency": f.concurrency = parsePositiveInt("--concurrency", argv[++i]); break;
+      case "--context": f.context = readRequiredFile("--context", argv[++i]); break;
       case "--model": f.model = argv[++i]; break;
       case "--no-code-mode": f.codeMode = false; break;
-      case "--output": f.outputFormat = argv[++i] as "json" | "markdown" | "yaml" | "dot" | "html"; break; // Handle output format
-      case "--scoring-prompt": f.scoringSystemPrompt = readFileSync(argv[++i], "utf8"); break;
-      case "--red-team-prompt": f.redTeamSystemPrompt = readFileSync(argv[++i], "utf8"); break;
+      case "--output": {
+        const fmt = argv[++i];
+        if (!VALID_OUTPUT_FORMATS.has(fmt)) {
+          console.error(`Error: --output must be one of: ${[...VALID_OUTPUT_FORMATS].join(", ")}. Got "${fmt}"`);
+          process.exit(1);
+        }
+        f.outputFormat = fmt as Flags["outputFormat"];
+        break;
+      }
+      case "--scoring-prompt": f.scoringSystemPrompt = readRequiredFile("--scoring-prompt", argv[++i]); break;
+      case "--red-team-prompt": f.redTeamSystemPrompt = readRequiredFile("--red-team-prompt", argv[++i]); break;
       case "--github-owner": f.githubOwner = argv[++i]; break;
       case "--github-repo": f.githubRepo = argv[++i]; break;
       case "--github-token": f.githubToken = argv[++i]; break;

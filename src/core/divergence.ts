@@ -39,6 +39,7 @@ Output JSON array: [{"text": "...", "rationale": "..."}]
       userPrompt,
     });
   } catch (error) {
+    process.stderr.write(`  ! diverge failed for frame "${frame.label}": ${error instanceof Error ? error.message : error}\n`);
     return { frameId: frame.id, ideas: [] };
   }
 
@@ -47,6 +48,7 @@ Output JSON array: [{"text": "...", "rationale": "..."}]
   try {
     rows = parseJSON<Row[]>(raw);
   } catch {
+    process.stderr.write(`  ! diverge parse failed for frame "${frame.label}" — raw response was not valid JSON\n`);
     return { frameId: frame.id, ideas: [] };
   }
 

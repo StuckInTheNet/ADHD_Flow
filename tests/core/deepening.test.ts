@@ -69,7 +69,7 @@ describe('deepenIdea', () => {
     const result = await deepenIdea(problem, mockIdea, mockSiblings, model);
 
     expect(result.ideaId).toBe(mockIdea.id);
-    expect(result.sketch).toBe('(deepen pass failed to parse)');
+    expect(result.sketch).toBe('(deepen parse failed)');
     expect(result.childIdeas).toEqual([]);
   });
 
@@ -79,7 +79,7 @@ describe('deepenIdea', () => {
     const result = await deepenIdea(problem, mockIdea, mockSiblings, model);
 
     expect(result.ideaId).toBe(mockIdea.id);
-    expect(result.sketch).toBe('(deepen pass failed to parse)');
+    expect(result.sketch).toBe('(deepen pass failed)');
     expect(result.childIdeas).toEqual([]);
   });
 });

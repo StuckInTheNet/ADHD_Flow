@@ -46,7 +46,8 @@ Output JSON:
       userPrompt,
     });
   } catch (error) {
-    return { ideaId: idea.id, sketch: "(deepen pass failed to parse)", childIdeas: [] };
+    process.stderr.write(`  ! deepen failed for idea "${idea.text.slice(0, 50)}": ${error instanceof Error ? error.message : error}\n`);
+    return { ideaId: idea.id, sketch: "(deepen pass failed)", childIdeas: [] };
   }
 
   type Out = { sketch: string; childIdeas: { text: string; rationale?: string }[] };
@@ -54,7 +55,8 @@ Output JSON:
   try {
     parsed = parseJSON<Out>(raw);
   } catch {
-    return { ideaId: idea.id, sketch: "(deepen pass failed to parse)", childIdeas: [] };
+    process.stderr.write(`  ! deepen parse failed for idea "${idea.text.slice(0, 50)}" — raw response was not valid JSON\n`);
+    return { ideaId: idea.id, sketch: "(deepen parse failed)", childIdeas: [] };
   }
 
   const childIdeas: Idea[] = parsed.childIdeas.map((c) => ({

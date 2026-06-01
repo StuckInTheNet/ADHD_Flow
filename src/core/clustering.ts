@@ -29,12 +29,14 @@ Output JSON: [{"label":"...","ideaIds":["...","..."]}]`;
       userPrompt,
     });
   } catch (error) {
+    process.stderr.write(`  ! clustering failed: ${error instanceof Error ? error.message : error}\n`);
     return [];
   }
 
   try {
     return parseJSON<Cluster[]>(raw);
   } catch {
+    process.stderr.write(`  ! clustering parse failed — raw response was not valid JSON\n`);
     return [];
   }
 }

@@ -95,6 +95,10 @@ export function renderYaml(result: RunResult): string {
   return yaml.dump(result);
 }
 
+function dotEscape(s: string): string {
+  return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n");
+}
+
 export function renderGraphviz(result: RunResult): string {
   let dot = `digraph ADHD_Flow {\n`;
   dot += `  rankdir=LR;\n`;
@@ -105,43 +109,43 @@ export function renderGraphviz(result: RunResult): string {
   dot += `    label="Problem";\n`;
   dot += `    style="filled";\n`;
   dot += `    fillcolor="#d0e0f0";\n`;
-  dot += `    problem [label="${result.problem}", shape=oval, fillcolor="#a0c0e0"];\n`;
+  dot += `    problem [label="${dotEscape(result.problem)}", shape=oval, fillcolor="#a0c0e0"];\n`;
   dot += `  }\n\n`;
 
   // Ideas and their scores
   result.shortlist.forEach((idea) => {
-    dot += `  "${idea.id}" [label="${idea.text}\n(N:${idea.score?.novelty} V:${idea.score?.viability} F:${idea.score?.fit} I:${idea.score?.impact} E:${idea.score?.effort} R:${idea.score?.risk})", fillcolor="#f0f0f0"];\n`;
+    dot += `  "${idea.id}" [label="${dotEscape(idea.text)}\\n(N:${idea.score?.novelty} V:${idea.score?.viability} F:${idea.score?.fit} I:${idea.score?.impact} E:${idea.score?.effort} R:${idea.score?.risk})", fillcolor="#f0f0f0"];\n`;
     dot += `  problem -> "${idea.id}" [label="shortlist"];\n`;
   });
 
   if (result.nonObviousPick) {
-    dot += `  "${result.nonObviousPick.id}" [label="${result.nonObviousPick.text}\n(Non-obvious Pick)", fillcolor="#c0f0c0"];\n`;
+    dot += `  "${result.nonObviousPick.id}" [label="${dotEscape(result.nonObviousPick.text)}\\n(Non-obvious Pick)", fillcolor="#c0f0c0"];\n`;
     dot += `  problem -> "${result.nonObviousPick.id}" [label="non-obvious"];\n`;
   }
 
   result.deepened.forEach((deepenedIdea) => {
-    dot += `  "${deepenedIdea.ideaId}_deepened" [label="Deepened: ${deepenedIdea.sketch}", shape=note, fillcolor="#f8f8f8"];\n`;
+    dot += `  "${deepenedIdea.ideaId}_deepened" [label="Deepened: ${dotEscape(deepenedIdea.sketch)}", shape=note, fillcolor="#f8f8f8"];\n`;
     dot += `  "${deepenedIdea.ideaId}" -> "${deepenedIdea.ideaId}_deepened" [label="deepened"];\n`;
 
     if (deepenedIdea.redTeamCritique) {
-      dot += `  "${deepenedIdea.ideaId}_redteam" [label="Red Team: ${deepenedIdea.redTeamCritique}", shape=note, fillcolor="#f8d0d0"];\n`;
+      dot += `  "${deepenedIdea.ideaId}_redteam" [label="Red Team: ${dotEscape(deepenedIdea.redTeamCritique)}", shape=note, fillcolor="#f8d0d0"];\n`;
       dot += `  "${deepenedIdea.ideaId}" -> "${deepenedIdea.ideaId}_redteam" [label="critique"];\n`;
     }
 
     deepenedIdea.childIdeas.forEach((childIdea) => {
-      dot += `  "${childIdea.id}" [label="${childIdea.text}", fillcolor="#f0f0f0", fontsize=9];\n`;
+      dot += `  "${childIdea.id}" [label="${dotEscape(childIdea.text)}", fillcolor="#f0f0f0", fontsize=9];\n`;
       dot += `  "${deepenedIdea.ideaId}_deepened" -> "${childIdea.id}" [label="child idea"];\n`;
     });
   });
 
   result.traps.forEach((trap) => {
-    dot += `  "${trap.id}" [label="TRAP: ${trap.text}\n(${trap.score?.trap})", fillcolor="#ffcccc", fontcolor="red"];\n`;
+    dot += `  "${trap.id}" [label="TRAP: ${dotEscape(trap.text)}\\n(${dotEscape(trap.score?.trap ?? "")})", fillcolor="#ffcccc", fontcolor="red"];\n`;
     dot += `  problem -> "${trap.id}" [label="trap"];\n`;
   });
 
   result.clusters.forEach((cluster) => {
     dot += `  subgraph cluster_${cluster.label.replace(/\W/g, '_')} {\n`;
-    dot += `    label="${cluster.label}";\n`;
+    dot += `    label="${dotEscape(cluster.label)}";\n`;
     dot += `    style="filled";\n`;
     dot += `    fillcolor="#f0f8ff";\n`;
     cluster.ideaIds.forEach((ideaId) => {
@@ -155,7 +159,7 @@ export function renderGraphviz(result: RunResult): string {
   });
 
   if (result.provocation) {
-    dot += `  provocation [label="Provocation: ${result.provocation}", shape=diamond, fillcolor="#ffffcc"];\n`;
+    dot += `  provocation [label="Provocation: ${dotEscape(result.provocation)}", shape=diamond, fillcolor="#ffffcc"];\n`;
     dot += `  problem -> provocation [label="provokes"];\n`;
   }
 
