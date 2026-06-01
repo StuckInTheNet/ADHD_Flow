@@ -6,10 +6,11 @@ export async function createLinearIssue(
   token: string,
 ): Promise<string> {
   const url = `https://api.linear.app/graphql`;
-  const title = idea.text;
+  let title = "";
   let description = "";
 
   if ("sketch" in idea) {
+    title = `Deepened idea: ${idea.ideaId}`;
     description = `**Deepened Idea:**\n${idea.sketch}\n\n`;
     if (idea.redTeamCritique) {
       description += `**Red Team Critique:**\n${idea.redTeamCritique}\n\n`;
@@ -21,6 +22,7 @@ export async function createLinearIssue(
       });
     }
   } else {
+    title = idea.text;
     description = `**Idea:**\n${idea.text}\n\n`;
     if (idea.rationale) {
       description += `**Rationale:**\n${idea.rationale}\n\n`;
@@ -71,10 +73,10 @@ export async function createLinearIssue(
     }),
   });
 
-  const result = await response.json();
+  const result = (await response.json()) as Record<string, any>;
 
   if (response.ok && result.data?.issueCreate?.success) {
-    return result.data.issueCreate.issue.url;
+    return result.data.issueCreate.issue.url as string;
   } else {
     throw new Error(
       `Failed to create Linear issue: ${

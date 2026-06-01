@@ -61,7 +61,7 @@ describe('engine.run', () => {
 
     expect(frameRegistry.selectFrames).toHaveBeenCalledWith(5, true);
     expect(divergeBranch).toHaveBeenCalledTimes(mockFrames.length);
-    expect(scoreIdeas).toHaveBeenCalledWith(problem, expect.any(Array), undefined, undefined);
+    expect(scoreIdeas).toHaveBeenCalledWith(problem, expect.any(Array), undefined, undefined, undefined);
     expect(clusterIdeas).toHaveBeenCalledWith(problem, expect.any(Array), undefined);
     expect(deepenIdea).toHaveBeenCalledTimes(3); // topK default is 3
     expect(redTeamIdea).toHaveBeenCalledTimes(3); // topK default is 3
@@ -119,6 +119,7 @@ describe('engine.run', () => {
       expect.any(Array),
       customOptions.model,
       customOptions.scoringWeights,
+      undefined,
     );
     expect(deepenIdea).toHaveBeenCalledTimes(1); // topK is 1
     expect(redTeamIdea).toHaveBeenCalledTimes(1); // topK is 1

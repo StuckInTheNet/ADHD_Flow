@@ -6,10 +6,11 @@ export async function createNotionPage(
   token: string,
 ): Promise<string> {
   const url = `https://api.notion.com/v1/pages`;
-  const title = idea.text;
+  let title = "";
   let content = "";
 
   if ("sketch" in idea) {
+    title = `Deepened idea: ${idea.ideaId}`;
     content = `**Deepened Idea:**\n${idea.sketch}\n\n`;
     if (idea.redTeamCritique) {
       content += `**Red Team Critique:**\n${idea.redTeamCritique}\n\n`;
@@ -21,6 +22,7 @@ export async function createNotionPage(
       });
     }
   } else {
+    title = idea.text;
     content = `**Idea:**\n${idea.text}\n\n`;
     if (idea.rationale) {
       content += `**Rationale:**\n${idea.rationale}\n\n`;
@@ -45,7 +47,7 @@ export async function createNotionPage(
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
-      "Notion-Version": "2022-06-28", // Required Notion API version
+      "Notion-Version": "2022-06-28",
     },
     body: JSON.stringify({
       parent: {
@@ -61,7 +63,6 @@ export async function createNotionPage(
             },
           ],
         },
-        // Assuming a 'Description' rich_text property in Notion database
         Description: {
           rich_text: [
             {
@@ -75,14 +76,14 @@ export async function createNotionPage(
     }),
   });
 
-  const page = await response.json();
+  const page = (await response.json()) as Record<string, unknown>;
 
   if (response.ok) {
-    return page.url;
+    return page.url as string;
   } else {
     throw new Error(
       `Failed to create Notion page: ${
-        page.message || JSON.stringify(page)
+        (page.message as string) || JSON.stringify(page)
       }`,
     );
   }

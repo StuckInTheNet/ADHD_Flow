@@ -1,19 +1,17 @@
 import type { Idea, DeepenedIdea } from "../types.js";
 import { google } from "googleapis";
 
-// This function will need to be called with an authenticated Google API client.
-// For a real application, you'd handle OAuth2 flow to get the accessToken.
-// For simplicity in this example, we assume a pre-authenticated client or a service account.
 export async function createGoogleDoc(
   idea: Idea | DeepenedIdea,
-  accessToken: string, // OAuth2 access token
+  accessToken: string,
 ): Promise<string> {
   const docs = google.docs({ version: "v1", auth: accessToken });
 
-  const title = `ADHD_Flow Idea: ${idea.text}`;
+  let title = "";
   let content = "";
 
   if ("sketch" in idea) {
+    title = `ADHD_Flow Idea: ${idea.ideaId}`;
     content = `Deepened Idea:\n${idea.sketch}\n\n`;
     if (idea.redTeamCritique) {
       content += `Red Team Critique:\n${idea.redTeamCritique}\n\n`;
@@ -25,6 +23,7 @@ export async function createGoogleDoc(
       });
     }
   } else {
+    title = `ADHD_Flow Idea: ${idea.text}`;
     content = `Idea:\n${idea.text}\n\n`;
     if (idea.rationale) {
       content += `Rationale:\n${idea.rationale}\n\n`;
@@ -44,7 +43,6 @@ export async function createGoogleDoc(
     }
   }
 
-  // 1. Create a new blank document
   const createResponse = await docs.documents.create({
     requestBody: {
       title: title,
@@ -56,22 +54,19 @@ export async function createGoogleDoc(
     throw new Error("Failed to create Google Doc: No document ID returned.");
   }
 
-  // 2. Append content to the document
-  const requests = [
-    {
-      insertText: {
-        location: {
-          endOfSegmentLocation: {}, // Appends to the end of the document body
-        },
-        text: content,
-      },
-    },
-  ];
-
   await docs.documents.batchUpdate({
     documentId: documentId,
     requestBody: {
-      requests: requests,
+      requests: [
+        {
+          insertText: {
+            location: {
+              index: 1,
+            },
+            text: content,
+          },
+        },
+      ],
     },
   });
 

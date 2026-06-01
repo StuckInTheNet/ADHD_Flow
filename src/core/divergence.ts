@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { callLLM, parseJSON } from "./llm.js";
-import type { Branch, Idea, Frame } from "./types.js";
+import type { Branch, Idea } from "./types.js";
+import type { Frame } from "./frames.js";
 
 const DIVERGE_SYSTEM = `You are in DIVERGENT mode. You are a generator, not a critic.
 Rules:

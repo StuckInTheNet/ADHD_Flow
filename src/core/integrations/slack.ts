@@ -6,7 +6,6 @@ export async function postToSlack(
   token: string,
 ): Promise<string> {
   const url = `https://slack.com/api/chat.postMessage`;
-  const title = idea.text;
   let messageText = "";
 
   if ("sketch" in idea) {
@@ -52,10 +51,10 @@ export async function postToSlack(
     }),
   });
 
-  const result = await response.json();
+  const result = (await response.json()) as Record<string, any>;
 
   if (response.ok && result.ok) {
-    return result.message.permalink; // Return permalink to the message
+    return result.message.permalink as string;
   } else {
     throw new Error(
       `Failed to post to Slack: ${

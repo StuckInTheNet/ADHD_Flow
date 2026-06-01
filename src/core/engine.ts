@@ -101,7 +101,8 @@ export async function run(opts: RunOptions): Promise<RunResult> {
         onEvent?.({ kind: "deepen:start", ideaId: idea.id, text: idea.text });
         const [d, redTeamCritique] = await Promise.all([
           deepenIdea(problem, idea, allIdeas, model),
-          redTeamIdea(problem, idea, model, redTeamSystemPrompt), // Pass redTeamSystemPrompt
+          redTeamIdea(problem, idea, model, redTeamSystemPrompt),
+        ]);
         d.redTeamCritique = redTeamCritique;
         onEvent?.({ kind: "deepen:done", ideaId: idea.id });
         return d;
