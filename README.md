@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.svg" alt="ADHD Flow — scatter first, then focus" width="100%" />
+  <img src="assets/banner.png" alt="ADHD Flow — scatter first, then focus" width="100%" />
 </p>
 
 # ADHD Flow
