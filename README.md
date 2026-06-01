@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/banner.svg" alt="ADHD Flow — scatter first, then focus" width="100%" />
+</p>
+
 # ADHD Flow
 
 **Tree-of-thought brainstorming engine built on the [Claude Agent SDK](https://github.com/anthropics/claude-agent-sdk-typescript).**
