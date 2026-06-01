@@ -1,6 +1,6 @@
 # ADHD Flow
 
-**Tree-of-thought brainstorming engine built on the [Claude Agent SDK](https://docs.anthropic.com/en/docs/claude-agent-sdk).**
+**Tree-of-thought brainstorming engine built on the [Claude Agent SDK](https://github.com/anthropics/claude-agent-sdk-typescript).**
 
 Stop your agent from picking the first answer. ADHD Flow fans out parallel divergent ideas under different cognitive frames, scores them on six axes, flags traps, clusters the idea space, and deepens the survivors with red-team critique.
 
@@ -28,25 +28,57 @@ The result: you see the shape of the idea space, not just one point in it.
 
 ## How It Works
 
-```
-Problem
-  |
-  v
-DIVERGE ──> N parallel branches, each under a different cognitive frame
-  |          (hardware engineer, adversary, biologist, speedrunner, ...)
-  |          No branch sees another. No critic. Pure generation.
-  v
-SCORE ────> Novelty / Viability / Fit / Impact / Effort / Risk
-  |          Flag traps (ideas that look good but hide fatal flaws)
-  v
-CLUSTER ──> Group ideas by underlying angle, not surface keywords
-  v
-DEEPEN ───> Top-K ideas get recursive expansion + red-team critique
-  v
-OUTPUT ───> Shortlist, non-obvious pick, traps, provocation
+```mermaid
+flowchart TD
+    P["Problem"] --> D
+
+    subgraph DIVERGE ["1. DIVERGE — parallel fan-out"]
+        D["N branches fire in parallel"]
+        D --> F1["Hardware Engineer"]
+        D --> F2["Adversary"]
+        D --> F3["Biologist"]
+        D --> F4["Speedrunner"]
+        D --> F5["... + 15 more frames"]
+    end
+
+    subgraph SCORE ["2. SCORE — critic comes online"]
+        S["Score every idea on 6 axes"]
+        S --> |"Novelty · Viability · Fit"| S2[" "]
+        S --> |"Impact · Effort · Risk"| S2
+        S2 --> T{"Trap?"}
+        T -->|"Yes"| TRAP["Flag as trap"]
+        T -->|"No"| RANK["Rank by weighted total"]
+    end
+
+    subgraph CLUSTER ["3. CLUSTER — find the shape"]
+        CL["Group ideas by underlying angle"]
+    end
+
+    subgraph DEEPEN ["4. DEEPEN — connect the dots"]
+        DP["Top-K ideas expand recursively"]
+        DP --> RT["Red-team critique"]
+        DP --> CI["Generate child ideas"]
+    end
+
+    subgraph OUTPUT ["5. OUTPUT"]
+        O["Shortlist + Non-obvious pick + Traps + Provocation"]
+    end
+
+    F1 & F2 & F3 & F4 & F5 --> S
+    RANK --> CL
+    CL --> DP
+    RT & CI --> O
+    TRAP --> O
+
+    style DIVERGE fill:#e8f4e8,stroke:#4a9c4a
+    style SCORE fill:#fff3e0,stroke:#e67e22
+    style CLUSTER fill:#e3f2fd,stroke:#2196f3
+    style DEEPEN fill:#fce4ec,stroke:#e91e63
+    style OUTPUT fill:#f3e5f5,stroke:#9c27b0
+    style S2 fill:none,stroke:none
 ```
 
-Each phase maps to a single file in `src/core/`. The engine orchestrates them with controlled concurrency via `p-limit`.
+Each phase maps to a single file in `src/core/`. The engine orchestrates them with controlled concurrency via [`p-limit`](https://github.com/sindresorhus/p-limit). No branch sees another during divergence — cross-pollination only happens in the deepen phase.
 
 ---
 
@@ -241,7 +273,7 @@ npm test             # Run Vitest (48 tests)
 ### Stack
 
 - TypeScript 5 + Node ESM
-- [Claude Agent SDK](https://docs.anthropic.com/en/docs/claude-agent-sdk) for LLM calls
+- [Claude Agent SDK](https://github.com/anthropics/claude-agent-sdk-typescript) for LLM calls
 - [p-limit](https://github.com/sindresorhus/p-limit) for concurrency control
 - [Vitest](https://vitest.dev) for testing
 - React + Vite for the UI (separate app in `src/ui/`)
