@@ -11,7 +11,7 @@ export async function createGoogleDoc(
   let content = "";
 
   if ("sketch" in idea) {
-    title = `ADHD_Flow Idea: ${idea.ideaId}`;
+    title = `ADHD Flow Idea: ${idea.ideaId}`;
     content = `Deepened Idea:\n${idea.sketch}\n\n`;
     if (idea.redTeamCritique) {
       content += `Red Team Critique:\n${idea.redTeamCritique}\n\n`;
@@ -23,7 +23,7 @@ export async function createGoogleDoc(
       });
     }
   } else {
-    title = `ADHD_Flow Idea: ${idea.text}`;
+    title = `ADHD Flow Idea: ${idea.text}`;
     content = `Idea:\n${idea.text}\n\n`;
     if (idea.rationale) {
       content += `Rationale:\n${idea.rationale}\n\n`;

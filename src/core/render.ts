@@ -2,7 +2,7 @@ import * as yaml from 'js-yaml'; // Import js-yaml
 import type { RunResult } from "./types.js";
 
 export function renderMarkdown(result: RunResult): string {
-  let markdown = `# ADHD_Flow Analysis for "${result.problem}"\n\n`;
+  let markdown = `# ADHD Flow Analysis for "${result.problem}"\n\n`;
 
   // Shortlist
   markdown += `## Shortlist of Ideas\n\n`;

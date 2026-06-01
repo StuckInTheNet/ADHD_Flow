@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// CLI surface for ADHD_Flow.
+// CLI surface for ADHD Flow.
 //
 // Usage:
 //   adhd-flow "how should we shard this queue?"
@@ -120,7 +120,7 @@ function parse(argv: string[]): Flags {
 }
 
 function printHelp() {
-  console.log(`ADHD_Flow — a skill for coding agents
+  console.log(`ADHD Flow — a skill for coding agents
 
   Stop your agent from picking the first answer. Fans out many parallel
   divergent thoughts under different cognitive frames, scores them,

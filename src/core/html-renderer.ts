@@ -14,7 +14,7 @@ export function renderHtml(result: RunResult): string {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADHD_Flow Report for "${htmlEscape(result.problem)}"</title>
+    <title>ADHD Flow Report for "${htmlEscape(result.problem)}"</title>
     <style>
         body { font-family: sans-serif; line-height: 1.6; margin: 20px; background-color: #f4f4f4; color: #333; }
         .container { max-width: 900px; margin: auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -32,7 +32,7 @@ export function renderHtml(result: RunResult): string {
 </head>
 <body>
     <div class="container">
-        <h1>ADHD_Flow Analysis for "${htmlEscape(result.problem)}"</h1>
+        <h1>ADHD Flow Analysis for "${htmlEscape(result.problem)}"</h1>
 
         <h2>Shortlist of Ideas</h2>
         ${result.shortlist.map((idea, index) => `

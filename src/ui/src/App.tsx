@@ -140,7 +140,7 @@ function App() {
 
   return (
     <div className="App">
-      <h1>ADHD_Flow: Ideation Engine</h1>
+      <h1>ADHD Flow: Ideation Engine</h1>
       <div className="input-section">
         <textarea
           placeholder="Enter your problem description here..."
@@ -235,7 +235,7 @@ function App() {
             <option value="html">HTML</option>
           </select>
           <button onClick={handleRunAdhdFlow} disabled={loading}>
-            {loading ? 'Generating...' : 'Run ADHD_Flow'}
+            {loading ? 'Generating...' : 'Run ADHD Flow'}
           </button>
           <button onClick={handleClearHistory} disabled={loading}>
             Clear History
