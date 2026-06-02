@@ -33,39 +33,36 @@ The result: you see the shape of the idea space, not just one point in it.
 ## How It Works
 
 ```mermaid
-flowchart TD
-    P["Problem"] --> D
+flowchart LR
+    P(("Problem")) --> D
 
-    subgraph DIVERGE ["1. DIVERGE — parallel fan-out"]
-        D["N branches fire in parallel"]
-        D --> F1["Hardware Engineer"]
+    subgraph DIV ["DIVERGE"]
+        direction TB
+        D["N parallel branches"] --> F1["Hardware Engineer"]
         D --> F2["Adversary"]
         D --> F3["Biologist"]
         D --> F4["Speedrunner"]
-        D --> F5["... + 15 more frames"]
+        D --> F5["+ 15 more"]
     end
 
-    subgraph SCORE ["2. SCORE — critic comes online"]
-        S["Score every idea on 6 axes"]
-        S --> |"Novelty · Viability · Fit"| S2[" "]
-        S --> |"Impact · Effort · Risk"| S2
-        S2 --> T{"Trap?"}
-        T -->|"Yes"| TRAP["Flag as trap"]
-        T -->|"No"| RANK["Rank by weighted total"]
+    subgraph SCR ["SCORE"]
+        direction TB
+        S["6-axis scoring"] --> RANK["Rank"]
+        S --> TRAP["Trap?"]
     end
 
-    subgraph CLUSTER ["3. CLUSTER — find the shape"]
-        CL["Group ideas by underlying angle"]
+    subgraph CLU ["CLUSTER"]
+        CL["Group by angle"]
     end
 
-    subgraph DEEPEN ["4. DEEPEN — connect the dots"]
-        DP["Top-K ideas expand recursively"]
-        DP --> RT["Red-team critique"]
-        DP --> CI["Generate child ideas"]
+    subgraph DEP ["DEEPEN"]
+        direction TB
+        DP["Expand top-K"] --> RT["Red-team"]
+        DP --> CI["Child ideas"]
     end
 
-    subgraph OUTPUT ["5. OUTPUT"]
-        O["Shortlist + Non-obvious pick + Traps + Provocation"]
+    subgraph OUT ["OUTPUT"]
+        O["Shortlist\nNon-obvious pick\nTraps\nProvocation"]
     end
 
     F1 & F2 & F3 & F4 & F5 --> S
@@ -74,12 +71,11 @@ flowchart TD
     RT & CI --> O
     TRAP --> O
 
-    style DIVERGE fill:#e8f4e8,stroke:#4a9c4a
-    style SCORE fill:#fff3e0,stroke:#e67e22
-    style CLUSTER fill:#e3f2fd,stroke:#2196f3
-    style DEEPEN fill:#fce4ec,stroke:#e91e63
-    style OUTPUT fill:#f3e5f5,stroke:#9c27b0
-    style S2 fill:none,stroke:none
+    style DIV fill:#e8f4e8,stroke:#4a9c4a,color:#333
+    style SCR fill:#fff3e0,stroke:#e67e22,color:#333
+    style CLU fill:#e3f2fd,stroke:#2196f3,color:#333
+    style DEP fill:#fce4ec,stroke:#e91e63,color:#333
+    style OUT fill:#f3e5f5,stroke:#9c27b0,color:#333
 ```
 
 Each phase maps to a single file in `src/core/`. The engine orchestrates them with controlled concurrency via [`p-limit`](https://github.com/sindresorhus/p-limit). No branch sees another during divergence — cross-pollination only happens in the deepen phase.
